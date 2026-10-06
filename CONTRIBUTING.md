@@ -122,3 +122,40 @@ cd MM309-SurfaceEnergies
 ```
 
 You're now set up.
+
+## Working with Git
+
+> [!IMPORTANT]
+> Before starting work, *always* pull the latest changes.
+> ```sh
+> git checkout main
+> git pull
+> ```
+
+While working, you should `commit` frequently. Don't make big changes over multiple days. Small bits of contribution should be added frequently for us to integrate and to avoid large clashes.
+
+> [!IMPORTANT]
+> Name your commits properly.
+>
+> This is good:
+> ```sh
+> git add .
+> git commit -m "Add Lennard-Jones Potential
+> ```
+> This is bad:
+> ```sh
+> git add .
+> git commit -m "stuff"
+> ```
+
+> [!WARNING]
+> Keep the repository clean.
+>
+> Do *not* commit:
+> - directories
+> - generated simulation outputs or trajectories
+> - temporary files
+> - IDE configuration files
+> - Personal scripts that aren't part of the project
+>
+> For example, do not commit `build/`, `*.o`, `*.so`, `*.log`, `*.tmp`, `*.lammmpstrj`
