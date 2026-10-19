@@ -1,177 +1,210 @@
-import argparse
-import sys
 from pathlib import Path
+from typing import Mapping
 
 import numpy as np
+from ase import Atoms
 from ase.build import bulk
 from ase.io import write
 
 
-ELEMENTS = ("Fe", "Ni", "Al")
+ELEMENT_ORDER = ("Fe", "Ni", "Al")
 FRACTION_TOL = 1.0e-8
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description=(
-            "Generate a random substitutional FCC Fe-Ni-Al alloy and write "
-            "a LAMMPS-readable data file."
-        ),
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument("--Fe", type=float, help="Fe atomic fraction")
-    parser.add_argument("--Ni", type=float, help="Ni atomic fraction")
-    parser.add_argument("--Al", type=float, help="Al atomic fraction")
-    parser.add_argument(
-        "--size",
-        type=int,
-        nargs="+",
-        default=[4, 4, 4],
-        metavar="N",
-        help="FCC conventional-cell repeats: one integer (cubic) or nx ny nz",
-    )
-    parser.add_argument(
-        "--lattice-constant",
-        type=float,
-        default=3.60,
-        help="FCC lattice parameter in Angstrom; choose/justify for your model",
-    )
-    parser.add_argument(
-        "--seed", type=int, default=42, help="Random seed for reproducibility"
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=Path("fcc_random_alloy.data"),
-        help="Output LAMMPS data filename",
-    )
-    return parser.parse_args()
+def validate_composition(
+    composition: Mapping[str, float],
+    *,
+    tolerance: float = FRACTION_TOL,
+) -> dict[str, float]:
+    """Validate and normalize a complete Fe-Ni-Al atomic-fraction mapping.
 
-def resolve_fractions(args):
-    supplied = {
-        "Fe": args.Fe,
-        "Ni": args.Ni,
-        "Al": args.Al,
-    }
-    provided = [element for element, value in supplied.items() if value is not None]
+    All three elements must be present. Values must be finite and lie in [0, 1],
+    and their sum must equal one within ``tolerance``.
 
-    if len(provided) < 2:
-        raise ValueError("Specify at least two of --Fe, --Ni and --Al.")
+    The returned mapping follows ``ELEMENT_ORDER``.
+    """
 
-    for element in provided:
-        value = supplied[element]
+    if set(composition) != set(ELEMENT_ORDER):
+        missing = sorted(set(ELEMENT_ORDER) - set(composition))
+        extra = sorted(set(composition) - set(ELEMENT_ORDER))
+
+        details = []
+
+        if missing:
+            details.append(f"missing elements: {', '.join(missing)}")
+        if extra:
+            details.append(f"unsupported elements: {', '.join(extra)}")
+
+        raise ValueError("Invalid composition mapping (" + "; ".join(details) + ").")
+
+    fractions = {}
+
+    for element in ELEMENT_ORDER:
+        try:
+            value = float(composition[element])
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Fraction for {element} must be numeric.") from exc
+        if not np.isfinite(value):
+            raise ValueError(f"Fraction for {element} must be finite.")
         if not 0.0 <= value <= 1.0:
-            raise ValueError(f"--{element} must be between 0 and 1.")
+            raise ValueError(f"Fraction for {element} must lie between 0 and 1.")
+        fractions[element] = value
 
-    if len(provided) == 2:
-        missing = next(element for element in ELEMENTS if supplied[element] is None)
-        inferred = 1.0 - sum(supplied[element] for element in provided)
-        if inferred < -FRACTION_TOL:
-            raise ValueError(
-                f"The supplied fractions sum to more than 1; inferred {missing} "
-                f"fraction would be {inferred:.8g}."
-            )
-        supplied[missing] = max(0.0, inferred)
-        print(f"Inferred --{missing} = {supplied[missing]:.8g}")
-    else:
-        total = sum(supplied[element] for element in ELEMENTS)
-        if not np.isclose(total, 1.0, rtol=0.0, atol=FRACTION_TOL):
-            raise ValueError(
-                f"When all three fractions are supplied, they must sum to 1 "
-                f"(received {total:.12g})."
-            )
+    total = sum(fractions.values())
 
-    # Normalize tiny floating-point sum discrepancies after validation.
-    total = sum(supplied[element] for element in ELEMENTS)
-    return {element: supplied[element] / total for element in ELEMENTS}
+    if not np.isclose(total, 1.0, rtol=0.0, atol=tolerance):
+        raise ValueError(
+            f"Atomic fractions must sum to 1; received {total:.12g}."
+        )
 
-def allocate_integer_counts(fractions, n_atoms):
-    """Largest-remainder allocation: integer counts sum exactly to n_atoms."""
-    raw = {element: fractions[element] * n_atoms for element in ELEMENTS}
-    counts = {element: int(np.floor(raw[element])) for element in ELEMENTS}
+    # Correct only the tiny floating-point discrepancy permitted above.
+    return {element: fractions[element] / total for element in ELEMENT_ORDER}
+
+def allocate_integer_counts(
+    composition: Mapping[str, float],
+    n_atoms: int,
+) -> dict[str, int]:
+    
+    """Allocate integer species counts using the largest-remainder method.
+
+    The counts sum exactly to ``n_atoms`` and minimize rounding discrepancies
+    in the usual largest-remainder sense.
+    """
+
+    fractions = validate_composition(composition)
+
+    if isinstance(n_atoms, bool) or not isinstance(n_atoms, (int, np.integer)):
+        raise TypeError("n_atoms must be an integer.")
+    if n_atoms < 1:
+        raise ValueError("n_atoms must be positive.")
+
+    raw = {element: fractions[element] * n_atoms for element in ELEMENT_ORDER}
+    counts = {element: int(np.floor(raw[element])) for element in ELEMENT_ORDER}
     remainder = n_atoms - sum(counts.values())
 
-    order = sorted(
-        ELEMENTS,
+    ranking = sorted(
+        ELEMENT_ORDER,
         key=lambda element: raw[element] - counts[element],
         reverse=True,
     )
-    for element in order[:remainder]:
+    
+    for element in ranking[:remainder]:
         counts[element] += 1
+
     return counts
 
-def main():
-    args = parse_args()
+def generate_bulk(
+    composition: Mapping[str, float],
+    size: tuple[int, int, int] = (4, 4, 4),
+    lattice_constant: float = 3.60,
+    seed: int | None = None,
+) -> Atoms:
+    
+    """Return a random chemical occupation of an FCC conventional supercell.
 
-    try:
-        fractions = resolve_fractions(args)
-    except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
-        return 2
+    Parameters
+    ----------
+    composition
+        Complete atomic-fraction mapping, e.g.
+        ``{"Fe": 0.25, "Ni": 0.50, "Al": 0.25}``.
+    size
+        Positive repeats ``(nx, ny, nz)`` of the conventional cubic FCC cell.
+    lattice_constant
+        Conventional cubic lattice parameter in Angstrom.
+    seed
+        Seed for NumPy's random generator. Set it for reproducibility.
 
-    if len(args.size) == 1:
-        nx = ny = nz = args.size[0]
-    elif len(args.size) == 3:
-        nx, ny, nz = args.size
-    else:
-        print("Error: --size takes either one integer or three integers.", file=sys.stderr)
-        return 2
+    Returns
+    -------
+    ase.Atoms
+        Periodic FCC supercell with randomized element occupations. The cell
+        geometry is ideal and is not energy-minimized by this function.
+    """
 
-    if min(nx, ny, nz) < 1:
-        print("Error: all --size values must be positive integers.", file=sys.stderr)
-        return 2
-    if args.lattice_constant <= 0:
-        print("Error: --lattice-constant must be positive.", file=sys.stderr)
-        return 2
+    fractions = validate_composition(composition)
 
-    # A conventional FCC cell contains four sites.
-    atoms = bulk("Fe", crystalstructure="fcc",
-                 a=args.lattice_constant, cubic=True)
-    atoms = atoms.repeat((nx, ny, nz))
-    n_atoms = len(atoms)
+    if len(size) != 3:
+        raise ValueError("size must contain exactly three integers (nx, ny, nz).")
+    
+    if any(isinstance(n, bool) or not isinstance(n, (int, np.integer)) for n in size):
+        raise TypeError("Every size entry must be an integer.")
+    
+    if any(n < 1 for n in size):
+        raise ValueError("All size entries must be positive.")
+    
+    if not np.isfinite(lattice_constant) or lattice_constant <= 0:
+        raise ValueError("lattice_constant must be finite and positive.")
 
-    counts = allocate_integer_counts(fractions, n_atoms)
+    # Use Fe only to establish the FCC parent geometry; all site occupations
+    # are assigned below.
+    atoms = bulk(
+        "Fe",
+        crystalstructure="fcc",
+        a=float(lattice_constant),
+        cubic=True,
+    ).repeat(tuple(int(n) for n in size))
 
-    # Create the exact species list, then randomly permute site occupations.
-    symbols = []
-    for element in ELEMENTS:
-        symbols.extend([element] * counts[element])
+    counts = allocate_integer_counts(fractions, len(atoms))
+    symbols = [
+        element
+        for element in ELEMENT_ORDER
+        for _ in range(counts[element])
+    ]
 
-    rng = np.random.default_rng(args.seed)
-    symbols = np.asarray(symbols, dtype=object)
+    rng = np.random.default_rng(seed)
     rng.shuffle(symbols)
-    atoms.set_chemical_symbols(symbols.tolist())
+    atoms.set_chemical_symbols(symbols)
 
-    # specorder fixes LAMMPS atom-type IDs: 1=Fe, 2=Ni, 3=Al.
-    args.output.parent.mkdir(parents=True, exist_ok=True)
+    # Useful provenance for in-memory workflows. ASE's LAMMPS data writer
+    # does not preserve arbitrary Python metadata, so persist metadata separately
+    # if it is needed after writing.
+    atoms.info["composition_target"] = fractions
+    atoms.info["atom_counts"] = counts
+    atoms.info["element_order"] = list(ELEMENT_ORDER)
+    atoms.info["random_seed"] = seed
+    atoms.info["lattice_constant_angstrom"] = float(lattice_constant)
+    atoms.info["supercell_repeats"] = tuple(int(n) for n in size)
+
+    return atoms
+
+def write_bulk(atoms: Atoms, path: str | Path) -> Path:
+    """Write an ASE structure as a LAMMPS atomic-style data file.
+
+    Atom types are assigned by ``ELEMENT_ORDER``: Fe=1, Ni=2, Al=3.
+    Parent directories are created as needed. Returns the output path.
+    """
+    path = Path(path)
+    if path.suffix.lower() != ".data":
+        raise ValueError("LAMMPS data output must use the .data extension.")
+
+    symbols = set(atoms.get_chemical_symbols())
+    unexpected = symbols - set(ELEMENT_ORDER)
+    if unexpected:
+        raise ValueError(f"Structure contains unsupported species: {sorted(unexpected)}")
+    if not len(atoms):
+        raise ValueError("Cannot write an empty structure.")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
     write(
-        str(args.output),
+        str(path),
         atoms,
         format="lammps-data",
         atom_style="atomic",
-        specorder=list(ELEMENTS),
+        specorder=list(ELEMENT_ORDER),
     )
+    return path
 
-    print("\nGenerated random FCC alloy")
-    print("--------------------------")
-    print(f"Output file       : {args.output}")
-    print(f"Atom count        : {n_atoms}")
-    print(f"Supercell repeats : {nx} x {ny} x {nz}")
-    print(f"Lattice parameter : {args.lattice_constant:.6f} Angstrom")
-    print(f"Cell lengths      : {nx * args.lattice_constant:.6f}, "
-          f"{ny * args.lattice_constant:.6f}, "
-          f"{nz * args.lattice_constant:.6f} Angstrom")
-    print(f"Random seed       : {args.seed}")
-    print("LAMMPS atom types : 1=Fe, 2=Ni, 3=Al")
-    print("\nElement  Target fraction  Atom count  Actual fraction")
-    for element in ELEMENTS:
-        actual = counts[element] / n_atoms
-        print(f"{element:>6}  {fractions[element]:>15.8f}  "
-              f"{counts[element]:>10d}  {actual:>14.8f}")
-    print(
-        "\nNote: fractions are approximated by integer atom counts. "
-        "The lattice parameter is an input assumption, not an equilibrium "
-        "lattice parameter calculated by this script."
-    )
+def composition_report(atoms: Atoms) -> dict[str, dict[str, float | int]]:
+    """Return atom counts and actual atomic fractions in canonical order."""
+    
+    if not len(atoms):
+        raise ValueError("Cannot report composition of an empty structure.")
 
-if __name__ == "__main__":
-    main()
+    symbols = atoms.get_chemical_symbols()
+    result = {}
+    for element in ELEMENT_ORDER:
+        count = symbols.count(element)
+        result[element] = {
+            "count": count,
+            "fraction": count / len(atoms),
+        }
+    return result
