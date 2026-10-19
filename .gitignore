@@ -1,3 +1,21 @@
 *.data
 *.lammpstrj
 *.log
+
+# LaTeX Report
+
+docs/build/*
+!docs/build/.gitkeep
+
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.log
+*.run.xml
