@@ -2,14 +2,26 @@ from math import gcd
 from functools import reduce
 from pathlib import Path
 from typing import Sequence
+from dataclasses import dataclass
 
 import numpy as np
 from ase import Atoms
 from ase.build import surface
 from ase.io import write
 
-from .bulk import ELEMENT_ORDER, composition_report
+from .bulk import ELEMENT_ORDER, composition_report, CompositionReport
 
+@dataclass(frozen=True)
+class SlabReport:
+    n_atoms: int
+    composition: CompositionReport
+    surface_area_angstrom2: float
+    atomic_thickness_angstrom: float
+    cell_height_normal_angstrom: float
+    cell_lengths_angstrom: tuple[float, float, float]
+    pbc: tuple[bool, bool, bool]
+    miller_indices: tuple[int, int, int] | None
+    parent_random_seed: int | None
 
 def _normalize_miller_indices(
     miller_indices: Sequence[int],
@@ -151,30 +163,37 @@ def write_slab(slab: Atoms, path: str | Path) -> Path:
     return path
 
 
-def slab_report(slab: Atoms) -> dict:
-    """Summarize atom counts, composition, surface area, and geometric thickness."""
+def slab_report(slab: Atoms) -> SlabReport:
+    """Summarize atom counts, composition, surface area, and geometry."""
     if not len(slab):
         raise ValueError("Cannot report an empty slab.")
 
     a_vec, b_vec, c_vec = np.asarray(slab.cell)
     normal_vector = np.cross(a_vec, b_vec)
     area = float(np.linalg.norm(normal_vector))
+
     if area <= 0:
         raise ValueError("Slab has a degenerate in-plane cell.")
 
     normal = normal_vector / area
     projected_positions = np.asarray(slab.positions) @ normal
-    thickness = float(np.ptp(projected_positions)) if len(slab) > 1 else 0.0
+
+    thickness = (
+        float(np.ptp(projected_positions))
+        if len(slab) > 1
+        else 0.0
+    )
+
     cell_height = abs(float(np.dot(c_vec, normal)))
 
-    return {
-        "n_atoms": len(slab),
-        "composition": composition_report(slab),
-        "surface_area_angstrom2": area,
-        "atomic_thickness_angstrom": thickness,
-        "cell_height_normal_angstrom": cell_height,
-        "cell_lengths_angstrom": tuple(float(x) for x in slab.cell.lengths()),
-        "pbc": tuple(bool(x) for x in slab.pbc),
-        "miller_indices": slab.info.get("miller_indices"),
-        "parent_random_seed": slab.info.get("parent_random_seed"),
-    }
+    return SlabReport(
+        n_atoms=len(slab),
+        composition=composition_report(slab),
+        surface_area_angstrom2=area,
+        atomic_thickness_angstrom=thickness,
+        cell_height_normal_angstrom=cell_height,
+        cell_lengths_angstrom=tuple(float(x) for x in slab.cell.lengths()),
+        pbc=tuple(bool(x) for x in slab.pbc),
+        miller_indices=slab.info.get("miller_indices"),
+        parent_random_seed=slab.info.get("parent_random_seed"),
+    )

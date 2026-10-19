@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Mapping
+from dataclasses import dataclass
 
 import numpy as np
 from ase import Atoms
@@ -9,6 +10,18 @@ from ase.io import write
 
 ELEMENT_ORDER = ("Fe", "Ni", "Al")
 FRACTION_TOL = 1.0e-8
+
+@dataclass(frozen=True)
+class ElementComposition:
+    count: int
+    fraction: float
+
+
+@dataclass(frozen=True)
+class CompositionReport:
+    Fe: ElementComposition
+    Ni: ElementComposition
+    Al: ElementComposition
 
 def validate_composition(
     composition: Mapping[str, float],
@@ -193,18 +206,26 @@ def write_bulk(atoms: Atoms, path: str | Path) -> Path:
     )
     return path
 
-def composition_report(atoms: Atoms) -> dict[str, dict[str, float | int]]:
+def composition_report(atoms: Atoms) -> CompositionReport:
     """Return atom counts and actual atomic fractions in canonical order."""
-    
+
     if not len(atoms):
         raise ValueError("Cannot report composition of an empty structure.")
 
     symbols = atoms.get_chemical_symbols()
-    result = {}
-    for element in ELEMENT_ORDER:
-        count = symbols.count(element)
-        result[element] = {
-            "count": count,
-            "fraction": count / len(atoms),
+    n_atoms = len(atoms)
+
+    counts = {
+        element: symbols.count(element)
+        for element in ELEMENT_ORDER
+    }
+
+    return CompositionReport(
+        **{
+            element: ElementComposition(
+                count=count,
+                fraction=count / n_atoms,
+            )
+            for element, count in counts.items()
         }
-    return result
+    )
