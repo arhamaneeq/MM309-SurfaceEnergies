@@ -1,0 +1,25 @@
+units metal
+atom_style atomic
+boundary p p f
+
+read_data convergence_test/slab/structures/FeNiAl_111_L8_2x2_controlled.data
+
+mass 1 55.845
+mass 2 58.6934
+mass 3 26.9815
+
+pair_style meam
+pair_coeff * * convergence_test/potential/library.meam Fe Ni Al convergence_test/potential/FeNiAl.meam Fe Ni Al
+
+neighbor 2.0 bin
+neigh_modify delay 10 check yes
+
+thermo 100
+thermo_style custom step atoms pe press pxx pyy pzz lx ly lz
+
+min_style cg
+minimize 0.0 1.0e-6 50000 500000
+
+run 0
+
+write_data convergence_test/slab/structures/FeNiAl_111_L8_2x2_controlled_relaxed.data
