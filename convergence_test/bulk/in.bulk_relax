@@ -1,0 +1,36 @@
+# Relax a periodic random Fe-Ni-Al bulk alloy using MEAM
+
+units metal
+atom_style atomic
+boundary p p p
+
+read_data convergence_test/FeNiAl_bulk.data
+
+mass 1 55.845
+mass 2 58.6934
+mass 3 26.9815
+
+pair_style meam
+pair_coeff * * convergence_test/potential/library.meam Fe Ni Al convergence_test/potential/FeNiAl.meam Fe Ni Al
+
+neighbor 2.0 bin
+neigh_modify delay 10 check yes
+
+thermo 100
+thermo_style custom step atoms pe press lx ly lz vol
+
+# Relax atomic positions and the isotropic cell volume
+min_style cg
+fix cell_relax all box/relax iso 0.0 vmax 0.001
+
+minimize 1.0e-8 1.0e-8 10000 100000
+
+unfix cell_relax
+
+# Finish minimizing atomic positions at the relaxed cell dimensions
+minimize 1.0e-8 1.0e-8 10000 100000
+
+thermo_style custom step atoms pe press lx ly lz vol
+run 0
+
+write_data convergence_test/FeNiAl_bulk_relaxed.data
