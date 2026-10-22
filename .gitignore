@@ -19,3 +19,18 @@ docs/build/*
 *.synctex.gz
 *.log
 *.run.xml
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Python virtual environments
+.venv/
+.venv312/
+# Convergence-test simulation logs
+convergence_test/log*.log
+convergence_test/**/logs/
+
+# Top-level LAMMPS bulk logs
+convergence_test/log.*
+!convergence_test/FeNiAl_bulk.data
+!convergence_test/slab/structures/FeNiAl_111_L*_2x2_controlled.data
