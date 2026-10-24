@@ -1,0 +1,31 @@
+{
+  "structure_type": "bulk",
+  "structure_file": "studies/main/structures/bulk/Fe20Ni50Al30_config2.data",
+  "configuration": "Fe20Ni50Al30_config2",
+  "composition_target": {
+    "Fe": 0.2,
+    "Ni": 0.5,
+    "Al": 0.3
+  },
+  "random_seed": 20261025,
+  "lattice_constant_angstrom": 3.6,
+  "supercell_repeats": [
+    4,
+    4,
+    4
+  ],
+  "report": {
+    "Fe": {
+      "count": 51,
+      "fraction": 0.19921875
+    },
+    "Ni": {
+      "count": 128,
+      "fraction": 0.5
+    },
+    "Al": {
+      "count": 77,
+      "fraction": 0.30078125
+    }
+  }
+}

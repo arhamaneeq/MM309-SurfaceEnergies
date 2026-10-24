@@ -1,0 +1,55 @@
+{
+  "structure_type": "slab",
+  "structure_file": "studies/main/structures/slabs/Fe20Ni50Al30_config3_111.data",
+  "configuration": "Fe20Ni50Al30_config3",
+  "parent_bulk_file": "studies/main/structures/bulk/Fe20Ni50Al30_config3.data",
+  "parent_random_seed": 20261026,
+  "composition_target": {
+    "Fe": 0.2,
+    "Ni": 0.5,
+    "Al": 0.3
+  },
+  "miller_indices": [
+    1,
+    1,
+    1
+  ],
+  "layers": 12,
+  "vacuum_angstrom": 10.0,
+  "report": {
+    "n_atoms": 768,
+    "composition": {
+      "Fe": {
+        "count": 154,
+        "fraction": 0.20052083333333334
+      },
+      "Ni": {
+        "count": 384,
+        "fraction": 0.5
+      },
+      "Al": {
+        "count": 230,
+        "fraction": 0.2994791666666667
+      }
+    },
+    "surface_area_angstrom2": 359.15805545748236,
+    "atomic_thickness_angstrom": 22.863070659909184,
+    "cell_height_normal_angstrom": 42.863070659909184,
+    "cell_lengths_angstrom": [
+      20.364675298172568,
+      20.364675298172568,
+      42.863070659909184
+    ],
+    "pbc": [
+      true,
+      true,
+      false
+    ],
+    "miller_indices": [
+      1,
+      1,
+      1
+    ],
+    "parent_random_seed": 20261026
+  }
+}
