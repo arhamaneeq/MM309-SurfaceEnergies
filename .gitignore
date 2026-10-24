@@ -1,6 +1,6 @@
-*.data
-*.lammpstrj
-*.log
+#*.data
+#*.lammpstrj
+#*.log
 
 # LaTeX Report
 
