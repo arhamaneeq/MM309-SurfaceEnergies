@@ -16,6 +16,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 \usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
 
 \setlength{\parindent}{1em}
 \setlength{\parskip}{0pt}
@@ -32,3 +34,13 @@
 \titleformat{\subsection}{\normalfont\bfseries\small}{\thesubsection}{0.45em}{}
 \renewcommand{\abstractname}{Abstract}
 \renewcommand{\figurename}{Fig.}
+
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    frame=single,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    captionpos=b
+}

@@ -12,7 +12,7 @@ Inputs:
   studies/main/results/processed/slab_condition_summary.csv
 
 Outputs:
-  studies/main/results/plots/*.png and *.pdf
+  studies/main/results/plots/*.pdf
 
 Temperature-dependent figures group results by nominal thermostat setpoint
 (300, 500, 700 K by default), not by the instantaneous/averaged temperature.
@@ -69,10 +69,9 @@ def safe_stem(value: str) -> str:
 def save(fig: Any, stem: str) -> None:
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
-    fig.savefig(PLOTS_DIR / f"{stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(PLOTS_DIR / f"{stem}.pdf", bbox_inches="tight")
     plt.close(fig)
-    print(f"  {stem}.png / {stem}.pdf")
+    print(f"  {stem}.pdf")
 
 
 def nominal_temperature(value: Any) -> float | None:
@@ -232,11 +231,31 @@ def draw_ternary_axes(ax: Any) -> None:
             x1, y1 = ternary_xy(a)
             x2, y2 = ternary_xy(b)
             ax.plot([x1, x2], [y1, y2], color="0.82", lw=0.6, zorder=0)
-    ax.text(-0.035, -0.035, "Fe", ha="right", va="top", fontsize=11)
-    ax.text(1.035, -0.035, "Ni", ha="left", va="top", fontsize=11)
-    ax.text(0.5, height + 0.045, "Al", ha="center", va="bottom", fontsize=11)
-    ax.set_xlim(-0.10, 1.10)
-    ax.set_ylim(-0.08, height + 0.12)
+    ax.text(-0.045, -0.045, "Fe", ha="right", va="top", fontsize=11)
+    ax.text(1.045, -0.045, "Ni", ha="left", va="top", fontsize=11)
+    ax.text(0.5, height + 0.055, "Al", ha="center", va="bottom", fontsize=11)
+
+    # Percentage labels are placed where constant-component gridlines meet
+    # the triangle boundary: Fe and Ni on the base, and Al on both sloping edges.
+    for pct in (20, 40, 60, 80):
+        f = pct / 100.0
+        # Constant Fe=pct line meets the Fe-Ni base at Ni=1-pct.
+        ax.text(1.0 - f, -0.018, f"{pct}%", ha="center", va="top",
+                fontsize=7.5, color="0.25")
+        # Constant Ni=pct line meets the base at Ni=pct.
+        ax.text(f, -0.018, f"{pct}%", ha="center", va="top",
+                fontsize=7.5, color="0.25")
+        # Constant Al=pct gridline meets each sloping edge at this height.
+        y_edge = height * f
+        ax.text(0.5 * f - 0.018, y_edge, f"{pct}%", ha="right", va="center",
+                fontsize=7.5, color="0.25")
+        ax.text(1.0 - 0.5 * f + 0.018, y_edge, f"{pct}%", ha="left", va="center",
+                fontsize=7.5, color="0.25")
+
+    ax.text(0.5, -0.105, r"Composition coordinates: $(x_{\mathrm{Fe}}, x_{\mathrm{Ni}}, x_{\mathrm{Al}})$",
+            ha="center", va="top", fontsize=8.5)
+    ax.set_xlim(-0.16, 1.16)
+    ax.set_ylim(-0.16, height + 0.12)
     ax.set_aspect("equal")
     ax.axis("off")
 
@@ -261,10 +280,22 @@ def plot_ternary_surface_energy(slab_conditions: list[dict[str, str]]) -> None:
     for key, group in sorted(grouped(valid, ("_nominal_temperature_K", "miller_indices")).items()):
         print(f"    T={float(key[0]):g} K, ({key[1]}): {len(group)} point(s)")
 
+    # One global scale makes colour comparable across every temperature and
+    # orientation panel; otherwise each panel's autoscaling can exaggerate differences.
+    all_gamma = [row["_gamma"] for row in valid]
+    gamma_min, gamma_max = min(all_gamma), max(all_gamma)
+    if math.isclose(gamma_min, gamma_max):
+        pad = max(abs(gamma_min) * 0.01, 1e-6)
+        colour_limits = (gamma_min - pad, gamma_max + pad)
+    else:
+        colour_limits = (gamma_min, gamma_max)
+    print(f"  Shared ternary colour scale: {colour_limits[0]:.5g} to "
+          f"{colour_limits[1]:.5g} J m^-2 (all temperatures/orientations)")
+
     for (temp, hkl), rows in sorted(grouped(
         valid, ("_nominal_temperature_K", "miller_indices")
     ).items()):
-        fig, ax = plt.subplots(figsize=(6.8, 5.8))
+        fig, ax = plt.subplots(figsize=(7.2, 6.2))
         draw_ternary_axes(ax)
         xs, ys, values = [], [], []
         for row in rows:
@@ -272,8 +303,9 @@ def plot_ternary_surface_energy(slab_conditions: list[dict[str, str]]) -> None:
             xs.append(x)
             ys.append(y)
             values.append(row["_gamma"])
-        scatter = ax.scatter(xs, ys, c=values, cmap="viridis", s=145,
-                             edgecolors="black", linewidths=0.7, zorder=3)
+        scatter = ax.scatter(xs, ys, c=values, cmap="viridis",
+                             vmin=colour_limits[0], vmax=colour_limits[1],
+                             s=145, edgecolors="black", linewidths=0.7, zorder=3)
         for row, x, y, value in zip(rows, xs, ys, values):
             coord_label = composition_coordinate_label(row["_composition"])
             ax.annotate(
@@ -282,37 +314,95 @@ def plot_ternary_surface_energy(slab_conditions: list[dict[str, str]]) -> None:
                 fontsize=8, ha="left", va="bottom",
             )
         cbar = fig.colorbar(scatter, ax=ax, fraction=0.045, pad=0.03)
-        cbar.set_label(r"Surface free energy, $\gamma$ (J m$^{-2}$)")
+        cbar.set_label(r"Surface-energy estimate, $\gamma$ (J m$^{-2}$)")
         ax.set_title(
             rf"$\gamma_{{{hkl}}}$ at $T = {float(temp):g}\,\mathrm{{K}}$"
         )
         save(fig, f"ternary_gamma_T{int(float(temp))}_hkl{safe_stem(hkl)}")
 
 
+def run_setpoint(row: dict[str, Any]) -> float | None:
+    """Recover the thermostat setpoint from the run identifier, not sampled T."""
+    run = str(row.get("run", ""))
+    match = re.search(r"_T(\d+)(?:_|$)", run)
+    if match:
+        return nominal_temperature(float(match.group(1)))
+    # Fallback for data that stores the setpoint separately.
+    for field in ("setpoint_K", "nominal_temperature_K", "target_temperature_K"):
+        target = nominal_temperature(row.get(field))
+        if target is not None:
+            return target
+    return None
+
+
 def plot_time_series(
     samples: list[dict[str, str]], metric: str, ylabel: str, prefix: str,
-    max_runs: int = 100,
+    group_keys: tuple[str, ...], max_groups: int = 100,
 ) -> None:
-    by_run = grouped(samples, ("run",))
-    count = 0
-    for (run,), rows in sorted(by_run.items()):
-        points = sorted(
-            (x, y) for row in rows
-            if (x := num(row.get("timestep"))) is not None
-            and (y := num(row.get(metric))) is not None
-        )
-        if len(points) < 2:
+    """Combine all setpoints in each composition/group figure.
+
+    Each run is a faint line coloured by its nominal thermostat setpoint. A
+    darker, thicker line is the pointwise mean of runs at that setpoint. This
+    keeps replicate/configuration spread visible without producing one figure
+    per run. Runs are aligned by timestep; the mean is calculated only where
+    a run has a sample at that exact timestep.
+    """
+    by_group = grouped(samples, group_keys)
+    palette = {300.0: "tab:blue", 500.0: "tab:orange", 700.0: "tab:green"}
+    made_groups = 0
+    for group_key, group_rows in sorted(by_group.items()):
+        by_temp: dict[float, list[tuple[str, list[tuple[float, float]]]]] = defaultdict(list)
+        for run, run_rows in grouped(group_rows, ("run",)).items():
+            run_name = run[0]
+            target = run_setpoint(run_rows[0])
+            if target is None:
+                continue
+            points = sorted(
+                (x, y) for row in run_rows
+                if (x := num(row.get("timestep"))) is not None
+                and (y := num(row.get(metric))) is not None
+            )
+            if len(points) >= 2:
+                by_temp[target].append((run_name, points))
+        if not by_temp:
             continue
-        fig, ax = plt.subplots(figsize=(7.2, 3.8))
-        ax.plot([p[0] for p in points], [p[1] for p in points], linewidth=1.0)
+
+        fig, ax = plt.subplots(figsize=(8.2, 4.8))
+        for temp in sorted(by_temp):
+            runs = sorted(by_temp[temp], key=lambda item: item[0])
+            color = palette.get(temp, "0.35")
+            # Replicates/configurations share a temperature colour; opacity
+            # varies gently to show overlap without implying a numeric scale.
+            for index, (run_name, points) in enumerate(runs):
+                alpha = min(0.48, 0.18 + 0.07 * (index % 5))
+                ax.plot([p[0] for p in points], [p[1] for p in points],
+                        color=color, alpha=alpha, linewidth=0.8)
+
+            # Pointwise mean across runs at matching timesteps. Do not
+            # extrapolate or interpolate across missing/unequal time grids.
+            values_by_step: dict[float, list[float]] = defaultdict(list)
+            for _, points in runs:
+                for x, y in points:
+                    values_by_step[x].append(y)
+            mean_points = [
+                (x, sum(values) / len(values))
+                for x, values in sorted(values_by_step.items())
+                if len(values) >= 1
+            ]
+            if len(mean_points) >= 2:
+                ax.plot([p[0] for p in mean_points], [p[1] for p in mean_points],
+                        color=color, linewidth=2.2, label=f"{temp:g} K mean (n={len(runs)})")
+
         ax.set_xlabel("Timestep")
         ax.set_ylabel(ylabel)
-        ax.set_title(f"{run}: {metric}")
-        ax.grid(True, alpha=0.25)
-        save(fig, f"{prefix}_{safe_stem(run)}")
-        count += 1
-        if count >= max_runs:
-            print(f"  Reached time-series figure limit ({max_runs}) for {prefix}")
+        title = " | ".join(f"{k}={v}" for k, v in zip(group_keys, group_key) if v)
+        ax.set_title(f"{ylabel} time series — {title}")
+        ax.grid(True, alpha=0.22)
+        ax.legend(frameon=False, fontsize=8)
+        save(fig, f"{prefix}_{'_'.join(safe_stem(v) for v in group_key)}")
+        made_groups += 1
+        if made_groups >= max_groups:
+            print(f"  Reached time-series group limit ({max_groups}) for {prefix}")
             break
 
 
@@ -324,7 +414,27 @@ def main() -> None:
     slab_conditions = read_csv(PROCESSED_DIR / "slab_condition_summary.csv")
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
-    print("Generating plots grouped by nominal thermostat setpoint.")
+    # Clean up PNGs generated by earlier versions; this workflow now emits PDFs only.
+    stale_pngs = list(PLOTS_DIR.glob("*.png"))
+    for path in stale_pngs:
+        path.unlink()
+    if stale_pngs:
+        print(f"Removed {len(stale_pngs)} stale PNG plot(s).")
+    # Remove only legacy per-run time-series PDFs; the new grouped figures
+    # replace these and use a different filename structure.
+    legacy_prefixes = (
+        "bulk_lattice_timeseries_", "bulk_energy_timeseries_",
+        "slab_gamma_timeseries_", "slab_temperature_timeseries_",
+    )
+    stale_timeseries = [
+        path for path in PLOTS_DIR.glob("*.pdf")
+        if path.name.startswith(legacy_prefixes)
+    ]
+    for path in stale_timeseries:
+        path.unlink()
+    if stale_timeseries:
+        print(f"Removed {len(stale_timeseries)} legacy per-run time-series PDF(s).")
+    print("Generating PDF-only plots grouped by nominal thermostat setpoint.")
     print(f"Setpoints: {NOMINAL_TEMPERATURES_K}; bin tolerance: "
           f"+/-{TEMPERATURE_BIN_TOLERANCE_K:g} K")
 
@@ -350,16 +460,16 @@ def main() -> None:
     plot_ternary_surface_energy(slab_conditions)
 
     plot_time_series(bulk_samples, "a_fcc_A", "Lattice parameter (Å)",
-                     "bulk_lattice_timeseries")
+                     "bulk_lattice_timeseries", ("alloy",))
     plot_time_series(bulk_samples, "e_atom_eV_per_atom", "Energy (eV atom$^{-1}$)",
-                     "bulk_energy_timeseries")
+                     "bulk_energy_timeseries", ("alloy",))
     plot_time_series(slab_samples, "gamma_J_per_m2", "Surface energy (J m$^{-2}$)",
-                     "slab_gamma_timeseries")
+                     "slab_gamma_timeseries", ("alloy", "miller_indices"))
     plot_time_series(slab_samples, "temperature_K", "Temperature (K)",
-                     "slab_temperature_timeseries")
+                     "slab_temperature_timeseries", ("alloy", "miller_indices"))
 
     print(f"Plots written to: {PLOTS_DIR.relative_to(PROJECT_ROOT)}")
-    print("Each figure is saved as PNG (300 dpi) and PDF.")
+    print("Each figure is saved as PDF only.")
     print("Ternary plots use nominal-temperature bins and measured composition points only.")
     print("No raw or processed CSVs are modified.")
 

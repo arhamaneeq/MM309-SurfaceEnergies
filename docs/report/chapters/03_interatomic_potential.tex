@@ -17,9 +17,7 @@ from which atomic forces are obtained as
     \mathbf{F}_i = -\nabla_{\mathbf{r}_i} E.
 \end{equation}
 
-The accuracy of the potential therefore determines the energies, forces, 
-equilibrium structures, and dynamical trajectories available to a classical 
-atomistic simulation. Unlike density functional theory (DFT), which treats 
+Unlike density functional theory (DFT), which treats 
 the electronic structure explicitly within an approximate quantum-mechanical 
 framework, an empirical interatomic potential represents the effects of 
 electronic bonding through parameterised mathematical functions. This 
@@ -38,17 +36,14 @@ between pairs of atoms:
 
 where $r_{ij}=|\mathbf{r}_j-\mathbf{r}_i|$ is the interatomic separation and 
 $\phi_{\alpha_i\alpha_j}$ is the pair interaction between species $\alpha_i$ 
-and $\alpha_j$. The factor of one-half prevents double-counting of pairs. 
-Although computationally efficient, this formulation does not explicitly 
+and $\alpha_j$. Although computationally efficient, this formulation does not explicitly 
 represent the dependence of an atom's bonding energy on the collective 
 environment of its neighbours.
 
-This limitation is relevant to metallic systems. Metallic cohesion arises from 
-delocalised electrons, and the energetic contribution associated with an atom 
-depends on its coordination and the surrounding atomic density. An atom in a 
-bulk crystal consequently experiences a different bonding environment from an 
-atom at a free surface, near a vacancy, or within a chemically heterogeneous 
-local environment. A transferable potential for such systems must therefore 
+This limitation is relevant to metallic systems. An atom in a bulk metallic crystal
+consequently experiences a different bonding environment from an atom at a free 
+surface, near a vacancy, or within a chemically heterogeneous local 
+environment. A transferable potential for such systems must therefore 
 represent environmental effects rather than relying exclusively on independent 
 pair interactions.
 
@@ -83,14 +78,6 @@ where $f_{\alpha_j}$ represents the density contribution associated with a
 neighbouring atom of species $\alpha_j$. The embedding function describes the 
 energy associated with placing an atom into the effective host density generated 
 by its surroundings.
-
-The embedding contribution makes EAM a many-body model even though its energy 
-expression contains a pair term. Changing one atom's position modifies the local 
-density experienced by neighbouring atoms and can therefore alter their embedding 
-energies as well as the pair interactions. This allows EAM to represent important 
-features of metallic cohesion, including cohesive energies, equilibrium lattice 
-constants, elastic response, and defect energetics, more flexibly than a purely 
-pairwise potential.
 
 However, conventional EAM represents the local environment primarily through a scalar 
 density. Two environments with similar effective densities but different directional 
@@ -155,52 +142,11 @@ $G$ depend on the particular MEAM formulation and implementation. Equation~\ref{
 therefore a schematic representation of the conventional angular-density construction, rather than a complete 
 specification of every implementation option.
 
-The zeroth-order density describes the overall contribution from neighbouring atoms without resolving the directional 
-arrangement of that neighbourhood. The higher-order contributions encode angular information through moments of the 
-local atomic geometry. In this way, the effective density can distinguish environments that would otherwise appear 
-similar under an isotropic density approximation.
-
 This angular dependence is important when modelling structures with different coordination geometries. For example, 
 atoms in FCC, BCC, and other crystal structures occupy different spatial arrangements even when their nearest-neighbour 
 distances are comparable. Directional information also becomes relevant when the coordination environment is altered by 
 surfaces, defects, strain, or local chemical disorder. MEAM provides a framework for representing these effects within 
 a computationally tractable interatomic potential \cite{baskes1992meam}.
-
-\subsubsection{Reference structures and parameterisation}
-
-MEAM parameters are calibrated against selected reference properties rather than derived entirely from first principles 
-during each simulation. Depending on the parameterisation, reference information may include cohesive energies, equilibrium 
-lattice constants, equations of state, elastic properties, structural energy differences, defect energies, and surface 
-energies. The parameterisation determines which physical behaviours the potential can reproduce reliably and over which 
-range of structures and conditions it is expected to remain useful.
-
-Reference-structure information also enters the construction of the background density and the radial interaction. The 
-resulting model is intended to reproduce the energetics of relevant bonding environments while remaining computationally 
-efficient. However, agreement with a subset of fitted properties does not guarantee equal accuracy for properties that 
-were not included in the fitting data.
-
-For multicomponent alloys, the description must additionally represent interactions between unlike species. These interactions 
-cannot be inferred reliably from elemental properties alone: the energetics of mixing and the stability of competing chemical 
-arrangements depend on the alloy-specific parameterisation. Consequently, a potential intended for Fe--Ni--Al should be 
-assessed not only for its elemental reference behaviour, but also for the alloy configurations and structural properties 
-relevant to the intended simulations.
-
-\subsection{Application to Fe--Ni--Al alloys}
-
-The present calculations use the MEAM implementation in LAMMPS with the project files \texttt{library.meam} and \texttt{FeNiAl.meam}. 
-In this workflow, the library file supplies elemental reference parameters, while the alloy parameter file supplies additional 
-interaction and model settings. The exact interpretation of these files, including element ordering and optional parameters, 
-follows the LAMMPS MEAM implementation \cite{lammpsmeam}.
-
-Correct mapping between LAMMPS atom types and the potential's chemical species is essential. If the mapping is inconsistent, the 
-simulation can evaluate a mathematically valid energy for the wrong chemical assignment. Such an error may not produce a compilation 
-or runtime failure, but it invalidates the intended physical interpretation. The atom-type mapping, element ordering in the 
-\texttt{pair\_coeff} command, and species assignments in the simulation data must therefore be checked before interpreting calculated energies.
-
-The project parameterisation is associated with the work of Sharifi and Wick \cite{sharifi2025meam}. Its documented scope and limitations 
-must be considered when assessing whether it is suitable for the particular compositions, crystal structures, and thermodynamic conditions 
-investigated here. Potential provenance establishes the origin of the model, but does not by itself demonstrate quantitative accuracy 
-for every property of interest.
 
 \subsection{Relevance to surface-energy calculations}
 
@@ -220,17 +166,3 @@ For a slab containing $N$ atoms, a common potential-energy-based estimate of the
 where $E_{\mathrm{slab}}$ is the total energy of the slab, $e_{\mathrm{bulk}}$ is the reference bulk energy per atom at a consistent composition and 
 under compatible conditions, and $A$ is the area of one exposed face. The factor of two applies to a slab with two equivalent surfaces. The resulting 
 energy difference measures the excess energy associated with creating the two surfaces relative to the chosen bulk reference.
-
-Within this framework, MEAM provides the potential-energy landscape from which the slab and bulk energies are obtained. The calculated surface energy 
-therefore depends on the accuracy of the potential for both the bulk reference state and the under-coordinated environments present near the surface. 
-Errors in either contribution can propagate into the resulting energy difference. Reliable comparisons consequently require consistent potential settings, 
-compatible reference states, and converged slab dimensions and vacuum separation.
-
-For chemically disordered Fe--Ni--Al, distinct atomic configurations at the same nominal composition may produce different surface and subsurface environments. 
-Their calculated surface energies can therefore vary even when the crystallographic orientation and overall composition are held fixed. Multiple independent 
-configurations are needed to characterise this variation rather than treating one atomic arrangement as representative of the entire disordered alloy.
-
-At finite temperature, molecular dynamics samples configurations according to the chosen potential and simulation protocol. A time-averaged potential 
-energy is not, by itself, the thermodynamic surface free energy: entropic contributions and the thermodynamic definition of the bulk and slab reference states 
-must also be considered. Temperature-dependent results should therefore be interpreted in accordance with the quantities actually calculated and the limitations 
-of the potential.

@@ -1,7 +1,61 @@
 \section{Results}
-\subsection{Surface energies at different temperatures}
-% Reserved. Production calculations at the assigned temperatures have not yet been completed.
-\subsection{Comparison of alloy chemistry and surface orientations}
-% Reserved. Add results only after the relevant orientations/configurations are available.
-\subsection{Configuration variation and uncertainty}
-% Reserved. Report the number of independent configurations and a defined uncertainty statistic.
+\subsection{Bulk reference behaviour}
+The mean FCC lattice parameter increases from 300 to 700~K for all compositions: 3.6314 to 3.6464~\AA{} for Fe$_{20}$Ni$_{50}$Al$_{30}$, 3.6797 to 3.6976~\AA{} for FeNiAl, and 3.7456 to 3.7715~\AA{} for Fe$_{50}$Ni$_{30}$Al$_{20}$. These correspond to increases of approximately 0.41\%, 0.49\%, and 0.69\%. The bulk potential energy per atom becomes less negative with temperature. Automated checks found no basic data-integrity flags, but these checks do not establish physical equilibration or convergence.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]
+    {../studies/main/results/plots/bulk_lattice_parameter_vs_temperature.pdf}
+    \caption{Mean FCC lattice parameter as a function of temperature for the three alloy compositions.}
+    \label{fig:bulk-lattice-temperature}
+\end{figure}
+
+\subsection{Surface-energy trends}
+Table~\ref{tab:gamma} summarises the mean of three configuration-level trajectory means; uncertainties are their sample standard deviations in J~m$^{-2}$. The (111) estimate is lowest and (110) highest in all nine composition--temperature conditions. Fe$_{20}$Ni$_{50}$Al$_{30}$ has the highest surface-energy estimates, FeNiAl is intermediate, and Fe$_{50}$Ni$_{30}$Al$_{20}$ has the lowest.
+
+\begin{table*}[t]
+\centering
+\caption{Surface-energy estimate, mean $\pm$ sample standard deviation across three configurations (J~m$^{-2}$).}
+\label{tab:gamma}
+\scriptsize
+\begin{tabular}{llccc}
+\toprule
+Composition & Plane & 300 K & 500 K & 700 K \\
+\midrule
+Fe$_{20}$Ni$_{50}$Al$_{30}$ &(100)&2.436$\pm$0.216&2.430$\pm$0.212&2.450$\pm$0.214\\
+ &(110)&2.502$\pm$0.131&2.484$\pm$0.091&2.469$\pm$0.092\\
+ &(111)&1.982$\pm$0.024&1.978$\pm$0.010&1.966$\pm$0.021\\
+\midrule
+FeNiAl &(100)&2.001$\pm$0.193&1.974$\pm$0.192&1.938$\pm$0.196\\
+ &(110)&2.172$\pm$0.209&2.119$\pm$0.245&2.147$\pm$0.185\\
+ &(111)&1.687$\pm$0.105&1.636$\pm$0.076&1.577$\pm$0.116\\
+\midrule
+Fe$_{50}$Ni$_{30}$Al$_{20}$ &(100)&1.692$\pm$0.185&1.663$\pm$0.181&1.596$\pm$0.215\\
+ &(110)&1.729$\pm$0.257&1.770$\pm$0.266&1.708$\pm$0.240\\
+ &(111)&1.311$\pm$0.128&1.329$\pm$0.094&1.262$\pm$0.078\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The temperature dependence is weaker than the composition and orientation effects. The (111) mean decreases between 300 and 700~K for all three alloys, whereas (100) and (110) trends are smaller or non-monotonic. For example, FeNiAl (110) changes from 2.172 to 2.147~J~m$^{-2}$, with an intermediate value of 2.119~J~m$^{-2}$ at 500~K. Several configuration standard deviations are comparable to or larger than the temperature-induced changes.
+
+\begin{figure*}[t]
+\centering
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{ccc}
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T300_hkl100.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T300_hkl100.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T300_hkl110.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T300_hkl110.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T300_hkl111.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T300_hkl111.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}\\[-2pt]
+\multicolumn{3}{c}{\small 300 K}\\[2pt]
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T500_hkl100.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T500_hkl100.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T500_hkl110.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T500_hkl110.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T500_hkl111.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T500_hkl111.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}\\[-2pt]
+\multicolumn{3}{c}{\small 500 K}\\[2pt]
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T700_hkl100.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T700_hkl100.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T700_hkl110.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T700_hkl110.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}&
+\IfFileExists{../studies/main/results/plots/ternary_gamma_T700_hkl111.pdf}{\includegraphics[width=0.325\textwidth]{../studies/main/results/plots/ternary_gamma_T700_hkl111.pdf}}{\fbox{\parbox[c][1.8cm][c]{0.29\textwidth}{\centering Missing plot}}}\\[-2pt]
+\multicolumn{3}{c}{\small 700 K}
+\end{tabular}
+\caption{Ternary maps of surface-energy estimates. Columns are (100), (110), and (111); rows are 300, 500, and 700~K. Quantitative cross-panel comparison requires common colour limits.}
+\label{fig:ternary}
+\end{figure*}

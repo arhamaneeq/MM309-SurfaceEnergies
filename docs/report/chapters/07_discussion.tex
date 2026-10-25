@@ -1,5 +1,28 @@
 \section{Discussion}
-\subsection{Physical interpretation of the results}
-% Reserved until production results are available.
-\subsection{Comparison with literature and limitations}
-% Reserved until production results are available. Potential limitations are discussed in Section 3.
+The consistent orientation ranking is compatible with differences in surface atomic density and coordination: the close-packed FCC (111) surface has the lowest estimate, while (110) has the highest. Composition ordering is also consistent across the sampled matrix. Changes in elemental fractions alter local bonding and the chemical environments exposed at the surface, but the present data do not isolate segregation or specific bonding mechanisms.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.32\textwidth]
+    {../studies/main/results/plots/slab_surface_energy_vs_temperature_Fe20Ni50Al30.pdf}
+    \includegraphics[width=0.32\textwidth]
+    {../studies/main/results/plots/slab_surface_energy_vs_temperature_FeNiAl.pdf}
+    \includegraphics[width=0.32\textwidth]
+    {../studies/main/results/plots/slab_surface_energy_vs_temperature_Fe50Ni30Al20.pdf}
+    \caption{Surface-energy estimates versus temperature for Fe$_{20}$Ni$_{50}$Al$_{30}$, FeNiAl, and Fe$_{50}$Ni$_{30}$Al$_{20}$. The plotted quantities and uncertainty representation should be interpreted according to the corresponding plotting script.}
+    \label{fig:surface-energy-temperature}
+\end{figure*}
+
+Configuration variability limits interpretation of the temperature trends. Each reported standard deviation is based on only three configuration-level means; the nine samples within a trajectory are temporally correlated and are not nine independent configurations. Production trajectories last 10~ps, so stationarity and autocorrelation should be checked before interpreting small changes. Longer trajectories and more independent configurations would improve uncertainty estimates.
+
+Several systematic limitations remain. Bulk references were sampled under NPT, whereas slabs were sampled under fixed-cell NVT conditions. The estimator in Eq.~\ref{eq:gamma} therefore compares potential energies under different constraints and should not be equated with a thermodynamic surface free energy, which requires entropy and a consistent thermodynamic reference. Results also depend on the MEAM parameterisation and the imposed FCC model; they do not establish FCC phase stability across the full composition--temperature space.
+
+Most importantly, the production atom-type mapping is documented as type 1 = Al, type 2 = Fe, and type 3 = Ni, while the convergence workflow used a mapping not yet reconciled with it. Until the data-file masses, species assignments, and \texttt{pair\_coeff} ordering are checked together, all numerical trends should be treated as provisional. After this audit, repeat convergence tests for the production composition and (110) slab, then assess time-series stationarity and increase sampling where configuration spread is large.
+
+\subsection{Limitations and future improvements}
+
+The composition space was sampled at only three ternary compositions. Although these points reveal systematic differences between the investigated alloys, they are insufficient to establish a continuous composition--surface-energy relationship or identify intermediate compositions with potentially lower surface energies. A denser sampling of the ternary composition triangle would provide a more representative description of the composition dependence. Including binary alloys and the pure-element limits would also provide useful reference points and help distinguish elemental contributions from genuinely ternary effects.
+
+With a sufficiently dense dataset, the composition dependence could be modelled using interpolation functions inspired by the Redlich--Kister formalism. Such models could provide continuous estimates of surface energy across the composition space and quantify non-ideal interactions between constituent elements. However, a suitable ternary expansion and its predictive accuracy would need to be assessed against additional simulation data; fitting the current three compositions alone would not justify reliable interpolation.
+
+The statistical basis of the present results is also limited by the three independent chemical configurations and the short production trajectories. Additional configurations and longer sampling would improve estimates of configurational variability and temporal uncertainty. Finally, the surface-energy estimates remain conditional on the MEAM parameterisation, the imposed FCC structure, and the consistency of the bulk reference and slab calculations. The atom-type mapping discrepancy must be resolved, and convergence should be checked for representative production compositions and orientations before the numerical trends are treated as validated predictions.
