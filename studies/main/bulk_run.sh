@@ -43,15 +43,33 @@ SKIPPED=0
 COUNT=0
 BATCH_START=$SECONDS
 
-# Validate every input before launching any simulation.
+# Partition jobs BEFORE preflight. Never run -skiprun on completed jobs.
+PENDING_INPUTS=()
+
+for INPUT in "${INPUTS[@]}"; do
+    RUN_DIR="$(dirname -- "$INPUT")"
+
+    if [[ -f "$RUN_DIR/COMPLETE" ]]; then
+        ((SKIPPED += 1))
+    else
+        PENDING_INPUTS+=("$INPUT")
+    fi
+done
+
+REMAINING=${#PENDING_INPUTS[@]}
+
 printf "\n${BOLD}${CYAN}========================================${RESET}\n"
-printf "${BOLD}${CYAN} Preflight validation: %d inputs${RESET}\n" "$TOTAL"
+printf "${BOLD}${CYAN} Bulk equilibration preflight${RESET}\n"
+printf "  Total jobs:       %d\n" "$TOTAL"
+printf "  Already complete: %d\n" "$SKIPPED"
+printf "  To validate/run:  %d\n" "$REMAINING"
 printf "${BOLD}${CYAN}========================================${RESET}\n"
 
+# Validate only jobs that do not have a COMPLETE marker.
 VALIDATION_FAILED=0
 VALIDATION_COUNT=0
 
-for INPUT in "${INPUTS[@]}"; do
+for INPUT in "${PENDING_INPUTS[@]}"; do
     RUN_DIR="$(dirname -- "$INPUT")"
     RUN_NAME="$(basename -- "$RUN_DIR")"
     VALIDATION_LOG="$RUN_DIR/validation.log"
@@ -76,18 +94,20 @@ for INPUT in "${INPUTS[@]}"; do
 done
 
 if (( VALIDATION_FAILED > 0 )); then
-    printf "\n${RED}${BOLD}Preflight failed:${RESET} %d of %d inputs failed validation.\n" \
+    printf "\n${RED}${BOLD}Preflight failed:${RESET} %d of %d pending inputs failed validation.\n" \
         "$VALIDATION_FAILED" "$VALIDATION_COUNT"
-    printf "No simulations were launched. Inspect the validation logs above.\n"
+    printf "No simulations were launched. Inspect validation.log in the affected directories.\n"
     exit 1
 fi
 
-printf "\n${GREEN}${BOLD}All %d inputs passed preflight.${RESET}\n" \
-    "$VALIDATION_COUNT"
-printf "Proceeding to simulation batch.\n"
+if (( REMAINING > 0 )); then
+    printf "\n${GREEN}${BOLD}All %d pending inputs passed preflight.${RESET}\n" \
+        "$VALIDATION_COUNT"
+else
+    printf "\n${GREEN}All jobs are already marked complete; no preflight or simulations needed.${RESET}\n"
+fi
 
-# Simulation
-
+# Format elapsed seconds as HH:MM:SS.
 format_time() {
     local elapsed=$1
     printf '%02d:%02d:%02d' \
@@ -96,17 +116,6 @@ format_time() {
         "$((elapsed % 60))"
 }
 
-# Count jobs that are already complete before this batch starts.
-for INPUT in "${INPUTS[@]}"; do
-    RUN_DIR="$(dirname -- "$INPUT")"
-
-    if [[ -f "$RUN_DIR/COMPLETE" ]]; then
-        ((SKIPPED += 1))
-    fi
-done
-
-REMAINING=$((TOTAL - SKIPPED))
-
 printf "\n${BOLD}${BLUE}========================================${RESET}\n"
 printf "${BOLD}${BLUE} Bulk equilibration batch${RESET}\n"
 printf "  Total jobs:       %d\n" "$TOTAL"
@@ -114,15 +123,10 @@ printf "  Already complete: %d\n" "$SKIPPED"
 printf "  To run:           %d\n" "$REMAINING"
 printf "${BOLD}${BLUE}========================================${RESET}\n"
 
-for INPUT in "${INPUTS[@]}"; do
+# Execute only the pending jobs that passed preflight.
+for INPUT in "${PENDING_INPUTS[@]}"; do
     RUN_DIR="$(dirname -- "$INPUT")"
     RUN_NAME="$(basename -- "$RUN_DIR")"
-
-    # Skip jobs that completed successfully in a previous batch.
-    if [[ -f "$RUN_DIR/COMPLETE" ]]; then
-        printf "${GREEN}  SKIP${RESET}    %s (already complete)\n" "$RUN_NAME"
-        continue
-    fi
 
     ((COUNT += 1))
     RUN_START=$SECONDS
@@ -166,7 +170,8 @@ printf "  Already complete: %d\n" "$SKIPPED"
 printf "  Attempted:        %d\n" "$COUNT"
 printf "  ${GREEN}Succeeded:        %d${RESET}\n" "$SUCCEEDED"
 printf "  ${RED}Failed:            %d${RESET}\n" "$FAILED"
-printf "  Total time:       ${BOLD}%s${RESET}\n" "$(format_time "$BATCH_ELAPSED")"
+printf "  Total time:       ${BOLD}%s${RESET}\n" \
+    "$(format_time "$BATCH_ELAPSED")"
 printf "${BOLD}${BLUE}========================================${RESET}\n"
 
 if (( FAILED > 0 )); then

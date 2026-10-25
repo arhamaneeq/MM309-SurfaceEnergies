@@ -2,6 +2,8 @@
 #*.lammpstrj
 #*.log
 
+archive/*
+
 # LaTeX Report
 
 docs/build/*
