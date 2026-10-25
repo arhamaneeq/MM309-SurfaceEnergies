@@ -1,6 +1,64 @@
+```latex
 \section{Introduction}
+
 \subsection{Background and motivation}
-A surface is an energetic discontinuity in a crystalline solid. Creating a surface changes the local coordination of atoms and therefore incurs an energy cost. Surface energy affects the relative stability of crystal facets, equilibrium particle shapes, wetting, and other surface-dominated processes. In alloys, local chemical environments also matter: different elements can occupy surface and subsurface sites, and independently generated arrangements at the same overall composition can have different energies \cite{sun2013slabs,yalcin2024surfflow}.
+
+Surfaces play an important role in determining the energetic and structural 
+behaviour of crystalline materials. Creating a surface interrupts the periodic 
+coordination of atoms in the bulk, producing under-coordinated environments and 
+an associated excess energy. This excess, quantified by the surface energy, 
+influences the relative stability of crystallographic facets, equilibrium particle 
+morphologies, wetting behaviour, and other processes governed by surface energetics. 
+Reliable surface-energy calculations therefore require an accurate description of 
+both the bulk reference state and the atomic environments introduced by the surface.
+
+Surface energy depends on crystallographic orientation because different crystallographic 
+planes expose different atomic arrangements, surface densities, and coordination 
+environments. For a given crystal structure, close-packed and more open surfaces can 
+exhibit different energetic costs, although their relative stability must be established 
+for the material and conditions under investigation rather than assumed universally. 
+Systematic construction of surface slabs and convergence testing are consequently 
+important when comparing the energetics of different orientations 
+\cite{sun2013slabs,yalcin2024surfflow}.
+
+In multicomponent alloys, surface energetics are further complicated by chemical disorder. 
+Different elements can occupy surface and subsurface sites, and the local chemical environments 
+at a surface need not reproduce the nominal bulk composition. Consequently, two configurations 
+with identical overall compositions and crystallographic orientations can exhibit different 
+surface energies because of differences in their atomic arrangements. This configurational 
+variability must be considered when estimating representative surface energies for chemically 
+disordered alloys.
+
+Temperature introduces an additional consideration by changing the distribution of accessible 
+atomic configurations and their associated energies. Molecular-dynamics simulations can be used 
+to investigate the temperature dependence of potential-energy-based surface-energy estimates. 
+However, such estimates are not equivalent to thermodynamic surface free energies unless the 
+relevant entropic contributions and thermodynamic reference states are also accounted for. The 
+interpretation of temperature-dependent results must therefore reflect the quantities calculated 
+and the limitations of the interatomic potential employed.
 
 \subsection{Objectives and scope}
-This project studies surface energies in the Al--Fe--Ni alloy system using LAMMPS and a modified embedded-atom method (MEAM) potential. The production workflow contains three compositions: equiatomic FeNiAl, Fe$_{20}$Ni$_{50}$Al$_{30}$, and Fe$_{50}$Ni$_{30}$Al$_{20}$. The group study considers the (111), (100), and (110) orientations; the individual production task focuses on (110). The assignment also calls for calculations at 300, 500, and 700~K and three independent chemically disordered configurations per condition. Before interpreting production results, slab dimensions and separation between periodic surface images must be justified by convergence tests. This report covers the theory, potential source and limitations, methodology, and the preliminary convergence dataset currently available. Production results are not presented as completed findings.
+
+This project investigates the surface energetics of chemically disordered Al--Fe--Ni alloys using 
+molecular-dynamics simulations in LAMMPS and a modified embedded-atom method (MEAM) interatomic 
+potential. Three nominal compositions are considered: equiatomic FeNiAl, Fe$_{20}$Ni$_{50}$Al$_{30}$, 
+and Fe$_{50}$Ni$_{30}$Al$_{20}$. The calculations use FCC-based structural models; the thermodynamic 
+stability of the FCC phase across the full composition and temperature range is not assumed solely 
+from the structure-generation procedure.
+
+The group-wide study considers the FCC (111), (100), and (110) surface orientations, while the individual 
+production task focuses on the (110) surface. Calculations are planned at 300, 500, and 700~K, with three 
+independently generated chemically disordered configurations for each composition, orientation, and 
+temperature. This design enables comparisons of orientation- and composition-dependent energetics and 
+provides an initial assessment of configurational variability.
+
+The reliability of these comparisons depends on appropriate bulk reference energies, consistent 
+chemical-species assignments, and convergence of the slab geometry. The study therefore includes 
+preliminary tests of slab thickness and vacuum separation before applying the selected modelling 
+choices to the production calculations. The MEAM parameterisation must also be assessed in light of 
+its documented scope and limitations, particularly when interpreting temperature-dependent predictions.
+
+This report documents the theoretical basis of the surface-energy calculation, the interatomic potential 
+and its limitations, the computational methodology, and the preliminary convergence results available at 
+the time of writing. The preliminary tests are distinguished from the production calculations, and no production 
+results or final trends are claimed before the corresponding simulations and validation checks have been completed.
