@@ -1,0 +1,19 @@
+\section{Computational Methodology}
+\subsection{Alloy configurations and bulk reference}
+The production scripts define three alloy compositions: FeNiAl (Fe:Ni:Al = 1:1:1, or 33.33 at.\% each), Fe$_{20}$Ni$_{50}$Al$_{30}$, and Fe$_{50}$Ni$_{30}$Al$_{20}$. These are distinct from the Fe$_{25}$Ni$_{25}$Al$_{50}$ composition used in the saved preliminary convergence test. Bulk reference energies must be calculated separately for each production composition, using the same potential, compatible numerical settings, composition, and relaxation convention as the corresponding slab. The bulk energy value from the Fe$_{25}$Ni$_{25}$Al$_{50}$ test must not be reused as a reference for the production compositions.
+
+\textbf{Atom-type mapping requires verification.} The convergence-test documentation states type 1 = Fe, type 2 = Ni, type 3 = Al, while the production structure scripts document type 1 = Al, type 2 = Fe, type 3 = Ni. The data-file \texttt{Masses} section, atom-type order in each LAMMPS data file, and \texttt{pair\_coeff} element order must be checked together before production energies are trusted. Until this discrepancy is resolved, the convergence values below should be treated as preliminary results from the saved test setup, not as fully validated production evidence.
+
+\subsection{Surface slab construction and simulation procedure}
+Structures are generated using the project's Python tools and exported as LAMMPS data files. LAMMPS performs atomistic calculations with the supplied \texttt{FeNiAl.meam} and \texttt{library.meam} files. A controlled FCC (111) slab was used for the preliminary convergence tests before applying modelling choices to the assigned (110) surface. The saved 2$\times$2 four-layer (111) test structure contains 64 atoms, reported as 16 Fe, 16 Ni, and 32 Al; its surface area is 96.711966~\AA$^2$ per face and its atomic thickness is 6.471283~\AA. These values describe the Fe$_{25}$Ni$_{25}$Al$_{50}$ test model and should not be generalized to other compositions or orientations without checking the generated structures.
+
+\subsection{Surface-energy calculation}
+For a symmetric slab with two equivalent surfaces, the potential-energy-based estimate is
+\begin{equation}
+\gamma = \frac{E_{\mathrm{slab}}-N e_{\mathrm{bulk}}}{2A},
+\label{eq:surface-energy}
+\end{equation}
+where $E_{\mathrm{slab}}$ is the slab energy, $e_{\mathrm{bulk}}$ is the matching bulk reference energy per atom, $N$ is the atom count, and $A$ is the area of one face. The conversion from eV/\AA$^2$ to J/m$^2$ is 16.02176634. The formula assumes two equivalent surfaces. A time-averaged potential-energy estimate at finite temperature should not be described as the complete surface free energy unless entropic contributions are also evaluated.
+
+\subsection{Configuration sampling and uncertainty estimation}
+The production plan calls for three independent chemically disordered configurations for each composition, orientation, and temperature. With three compositions, three orientations, three temperatures (300, 500, and 700~K), and three configurations, the planned study contains 81 surface calculations. Results should report the number of configurations and a defined statistic, such as the mean and standard deviation across configurations. These production calculations and their uncertainty estimates are not claimed as completed in this report. Inputs, potential files, generated structures, logs, and machine-readable convergence data should be retained in the repository for reproducibility.

@@ -1,28 +1,34 @@
-\usepackage[margin=25mm]{geometry}
-
+% Compact two-column report. The hard limit is 7 pages total, including references.
+\usepackage[margin=1.55cm,top=1.65cm,bottom=1.6cm,columnsep=0.55cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{microtype}
-
-\usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
 \usepackage{siunitx}
 \usepackage{booktabs}
-
-\usepackage{graphicx}
-\usepackage{float}
+\usepackage{multirow}
+\usepackage{caption}
 \usepackage{subcaption}
-
-\usepackage[numbers,sort&compress]{natbib}
-
+\usepackage{cite}
+\usepackage{balance}
+\usepackage{url}
 \usepackage[hidelinks]{hyperref}
-\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{enumitem}
+\usepackage{titlesec}
 
-\graphicspath{{figures/schematics/}
-              {figures/methodology/}
-              {figures/results/}}
-
-\sisetup{
-    separate-uncertainty = true,
-    per-mode = symbol
-}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0pt}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=*}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{0}
+\titlespacing*{\section}{0pt}{1.0ex plus .2ex minus .2ex}{0.45ex}
+\titlespacing*{\subsection}{0pt}{0.7ex plus .2ex minus .2ex}{0.3ex}
+\titleformat{\section}{\normalfont\bfseries\normalsize}{\thesection.}{0.45em}{}
+\titleformat{\subsection}{\normalfont\bfseries\small}{\thesubsection}{0.45em}{}
+\renewcommand{\abstractname}{Abstract}
+\renewcommand{\figurename}{Fig.}

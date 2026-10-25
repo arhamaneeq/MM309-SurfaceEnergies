@@ -1,0 +1,16 @@
+\section{Theoretical Background and Literature Review}
+\subsection{Surface energy and crystallographic orientation}
+For a symmetric slab with two equivalent surfaces, the potential-energy-based surface-energy estimate is
+\begin{equation}
+\gamma = \frac{E_{\mathrm{slab}}-N e_{\mathrm{bulk}}}{2A},
+\label{eq:surface-energy}
+\end{equation}
+where $E_{\mathrm{slab}}$ is the total energy of the slab, $e_{\mathrm{bulk}}$ is the bulk reference energy per atom, $N$ is the number of atoms, and $A$ is the area of one exposed face. The factor of two accounts for the two surfaces. If energies are in eV and areas in \AA$^2$, the result is in eV/\AA$^2$; $1$ eV/\AA$^2 = 16.02176634$ J/m$^2$. Equation~\ref{eq:surface-energy} assumes equivalent surfaces and a bulk reference consistent with the slab calculation. Asymmetric or non-stoichiometric slabs may require a more careful formulation \cite{sun2013slabs,yalcin2024surfflow}.
+
+Different Miller-index planes expose different atomic densities and coordination environments, so surface energies are orientation-dependent. The (111), (100), and (110) planes of an FCC crystal are not energetically interchangeable. A reliable comparison requires consistent potential settings, bulk reference conventions, and sufficiently converged slab models.
+
+\subsection{Alloy chemistry and temperature effects}
+In a chemically disordered alloy, surface and subsurface sites may have local compositions that differ from the nominal bulk composition. Surface energies can therefore vary with the particular chemical arrangement and termination. Temperature can alter atomic configurations and their sampled potential energies; however, a simple time average of potential energy is not automatically the thermodynamic surface free energy, which also depends on entropic contributions and a clearly defined thermodynamic ensemble.
+
+\subsection{Previous studies and expected trends}
+Sun and Ceder describe systematic construction and convergence of surface slabs and emphasize that both slab size and vacuum separation should be checked \cite{sun2013slabs}. Yalcin and Wolloch present a workflow for high-throughput surface-energy calculations, highlighting consistent slab construction and reference-energy treatment \cite{yalcin2024surfflow}. These studies motivate explicit convergence tests before comparing orientations. General expectations, such as differences between close-packed and more open surfaces, should not be treated as results for this chemically complex alloy: the actual ranking must be established from the simulations and evaluated in light of the potential's accuracy.

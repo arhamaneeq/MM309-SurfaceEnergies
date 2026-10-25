@@ -1,32 +1,75 @@
-\documentclass[11pt,a4paper,oneside]{report}
+
+\documentclass[10pt,twocolumn,a4paper]{article}
 
 \input{report/preamble}
 \input{report/macros}
 
 \begin{document}
 
-\pagenumbering{roman}
+% ==================== COMPACT TITLE ====================
+\twocolumn[
+\begin{center}
+    \vspace*{-1.0cm}
 
-\input{report/frontmatter/title}
-\input{report/frontmatter/abstract}
+    {\Large\bfseries
+    Surface Energies of Fe--Ni--Al Alloys:\\[-0.1em]
+    Modelling and Convergence
+    \par}
 
-\tableofcontents
-\listoffigures
-\listoftables
+    \vspace{0.45cm}
 
-\clearpage
-\pagenumbering{arabic}
+    {\normalsize
+    Arham Aneeq Mohammed \quad
+    Prince \quad
+    Mayank
+    \par}
+
+    \vspace{0.2cm}
+
+    {\small
+    \textbf{Course:} MM309N -- Computational Methods for Materials
+    \quad
+    \textbf{Alloy:} Fe--Ni--Al
+    \par}
+
+    \vspace{0.15cm}
+
+    {\small
+    \textbf{Department:} Metallurgical Engineering and Materials Science, IIT Indore
+    \par}
+
+
+    \vspace{0.45cm}
+\end{center}
+]
+
+% ==================== ABSTRACT ====================
+\begin{abstract}
+This report documents the atomistic-modelling workflow and preliminary
+convergence tests for the Fe--Ni--Al surface-energy project. The production
+workflow defines three compositions: equiatomic FeNiAl,
+Fe$_{20}$Ni$_{50}$Al$_{30}$, and Fe$_{50}$Ni$_{30}$Al$_{20}$.
+The saved convergence dataset uses a separate Fe$_{25}$Ni$_{25}$Al$_{50}$
+test composition and is not a production-composition result. For a
+controlled FCC (111) slab, the 12- and 14-layer surface-energy estimates
+differ by approximately 0.0052 J/m$^2$, while 4 \AA\ of vacuum on each
+side matches the 25 \AA\ reference at the reported energy precision.
+An atom-type mapping inconsistency between the convergence and production
+workflows remains to be resolved before these tests can be treated as
+validated evidence for production calculations. Temperature-dependent
+production results are not yet reported.
+\end{abstract}
 
 \input{report/chapters/01_introduction}
-\input{report/chapters/02_theory}
-\input{report/chapters/03_methodology}
-\input{report/chapters/04_results}
-\input{report/chapters/05_discussion}
-\input{report/chapters/06_conclusion}
+\input{report/chapters/02_theory_literature}
+\input{report/chapters/03_interatomic_potential}
+\input{report/chapters/04_methodology}
+\input{report/chapters/05_convergence}
+\input{report/chapters/06_results}
+\input{report/chapters/07_discussion}
+\input{report/chapters/08_conclusion}
 
-\appendix
-\input{report/appendices/a_simulation_details}
-\input{report/appendices/b_convergence_tests}
+\balance
 
 \bibliographystyle{unsrt}
 \bibliography{references}

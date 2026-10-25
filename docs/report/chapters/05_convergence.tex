@@ -1,0 +1,52 @@
+\section{Model Validation and Convergence Study}
+\subsection{Slab dimensions and vacuum-spacing convergence}
+Two finite-size effects were tested independently using a controlled FCC (111) slab from the saved Fe$_{25}$Ni$_{25}$Al$_{50}$ test dataset. The thickness series contains 4, 6, 8, 10, 12, and 14 atomic layers, with the in-plane dimensions and potential settings held fixed. The vacuum study changes the padding on each side of a 10-layer slab. Increasing thickness tests whether the surface-energy estimate stabilizes as the slab interior becomes more bulk-like; changing vacuum tests for interactions between periodic slab images.
+
+The atom-type mapping used in this convergence dataset is not yet reconciled with the mapping documented by the production structure scripts (Section 4). Accordingly, the numerical trends below faithfully summarize the saved test data, but should not be treated as final validation until the type mapping and potential element order have been audited.
+
+\subsection{Convergence results and model selection}
+Table~\ref{tab:thickness} reproduces the controlled thickness data stored in the repository. The estimate is not monotonic for thin slabs: it changes from 1.2010~J/m$^2$ at 6 layers to 1.4272~J/m$^2$ at 8 layers. The 12- and 14-layer values differ by 0.0052~J/m$^2$, approximately 0.36\% of the 14-layer value. This suggests that 12 layers may be a reasonable provisional choice for this specific (111) test model, while 14 layers is more conservative if computational cost permits. The result is based on one test composition and chemical arrangement; it does not prove convergence for all production compositions or the assigned (110) surface.
+
+\begin{table}[t]
+\centering
+\caption{Saved FCC (111) test-slab thickness data for Fe$_{25}$Ni$_{25}$Al$_{50}$.}
+\label{tab:thickness}
+\scriptsize
+\begin{tabular}{rrrr}
+\toprule
+Layers & Atoms & $E_{\mathrm{slab}}$ (eV) & $\gamma$ (J/m$^2$)\\
+\midrule
+4 & 64 & -252.043494 & 1.2534\\
+6 & 96 & -386.264657 & 1.2010\\
+8 & 128 & -517.120893 & 1.4272\\
+10 & 160 & -650.773999 & 1.4218\\
+12 & 192 & -784.234158 & 1.4324\\
+14 & 224 & -917.759036 & 1.4376\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The vacuum results are shown in Table~\ref{tab:vacuum}. The 2~\AA\ per-side case differs from the 25~\AA\ reference by about 0.75037~eV, whereas 4~\AA\ per side and every larger tested value match the reference at the reported precision. For this specific test slab, 4~\AA\ per side is the smallest tested padding meeting that energy criterion; 10~\AA\ per side is a more conservative provisional choice. This does not establish a universal vacuum requirement.
+
+\begin{table}[t]
+\centering
+\caption{Vacuum-padding test for the saved 10-layer FCC (111) test slab. Padding is per side.}
+\label{tab:vacuum}
+\scriptsize
+\begin{tabular}{rrrr}
+\toprule
+Vacuum (\AA) & Cell height (\AA) & Energy (eV) & $\Delta E$ (eV)\\
+\midrule
+2 & 23.952639 & -651.524369 & 0.750370\\
+4 & 27.952639 & -650.773999 & 0.000000\\
+6 & 31.952639 & -650.773999 & 0.000000\\
+8 & 35.952639 & -650.773999 & 0.000000\\
+10 & 39.952639 & -650.773999 & 0.000000\\
+15 & 49.952639 & -650.773999 & 0.000000\\
+20 & 59.952639 & -650.773999 & 0.000000\\
+25 & 69.952639 & -650.773999 & 0.000000\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For follow-up calculations, 12 layers and 10~\AA\ vacuum per side are provisional settings, not a final claim of universal convergence. The production (110) slab has different geometry and surface area; it needs at least a targeted convergence check. First resolve the element/type mapping and confirm the energy reference, then repeat a representative test using a production composition.

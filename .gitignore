@@ -36,3 +36,5 @@ convergence_test/**/logs/
 convergence_test/log.*
 !convergence_test/FeNiAl_bulk.data
 !convergence_test/slab/structures/FeNiAl_111_L*_2x2_controlled.data
+
+docs/main.pdf
